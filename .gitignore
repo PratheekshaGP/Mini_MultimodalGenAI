@@ -1,0 +1,14 @@
+# Ignore environment variable files
+.env
+**/.env  # ignore .env in any subfolder too
+
+# Ignore dependencies
+node_modules/
+**/node_modules/
+
+# Ignore build or cache folders
+dist/
+build/
+
+# Ignore system files
+.DS_Store
