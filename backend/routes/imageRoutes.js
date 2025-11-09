@@ -1,49 +1,39 @@
 import express from "express";
+import fetch from "node-fetch";
 import dotenv from "dotenv";
-import OpenAI from "openai";
 
 dotenv.config();
 
 const router = express.Router();
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
 
-// TEXT → IMAGE
-router.post("/generate", async (req, res) => {
+router.post("/", async (req, res) => {
+  const { prompt } = req.body;
+
   try {
-    const { prompt } = req.body;
-
-    const result = await openai.images.generate({
-      model: "gpt-image-1",
-      prompt,
-      size: "auto",
+    const response = await fetch("https://api.stability.ai/v2beta/stable-image/generate/core", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${process.env.STABILITY_API_KEY}`,
+        "Accept": "application/json",
+        // This API requires multipart/form-data instead of JSON:
+      },
+      body: new URLSearchParams({
+        prompt: prompt || "A beautiful landscape with mountains and river"
+      })
     });
 
-    const imageUrl = result.data[0].url;
-    res.json({ imageUrl });
-  } catch (err) {
-    console.error("❌ Error generating image:", err);
-    res.status(500).json({ error: err.message || "Image generation failed" });
-  }
-});
+    if (!response.ok) {
+      const errText = await response.text();
+      console.error("API Error:", errText);
+      return res.status(500).json({ error: "Failed to generate image", details: errText });
+    }
 
-// SKETCH → IMAGE (optional later)
-router.post("/analyze-sketch", async (req, res) => {
-  try {
-    const { sketchDataUrl } = req.body;
+    const data = await response.json();
+    res.json(data);
 
-    const result = await openai.images.edit({
-      model: "gpt-image-1",
-      image: sketchDataUrl,
-      prompt: "Generate a realistic image based on this sketch",
-    });
-
-    const imageUrl = result.data[0].url;
-    res.json({ imageUrl });
-  } catch (err) {
-    console.error("❌ Sketch edit failed:", err);
-    res.status(500).json({ error: err.message || "Sketch analysis failed" });
+  } catch (error) {
+    console.error("Server Error:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
