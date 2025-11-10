@@ -7,7 +7,8 @@ import imageRoutes from "./routes/imageRoutes.js";
 
 const app = express();
 
-console.log("✅ OPENAI_API_KEY loaded?", !!process.env.OPENAI_API_KEY);
+console.log("✅ REPLICATE_API_KEY loaded?", !!process.env.REPLICATE_API_KEY);
+
 
 app.use(cors());
 app.use(express.json({ limit: "20mb" }));
