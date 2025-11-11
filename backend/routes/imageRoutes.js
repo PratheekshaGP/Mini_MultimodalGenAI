@@ -14,7 +14,9 @@ router.post("/generate", async (req, res) => {
   try {
     console.log("🧠 Generating image for prompt:", prompt);
 
-    const response = await fetch("https://router.huggingface.co/hf-inference/models/stabilityai/stable-diffusion-2",
+    // ✅ Correct Hugging Face API endpoint
+    const response = await fetch(
+      "https://router.huggingface.co/hf-inference/models/black-forest-labs/FLUX.1-schnell",
       {
         method: "POST",
         headers: {
@@ -25,12 +27,14 @@ router.post("/generate", async (req, res) => {
       }
     );
 
+    // 🧩 Handle non-OK responses
     if (!response.ok) {
       const error = await response.text();
       console.error("❌ Hugging Face API Error:", error);
       return res.status(500).json({ error: "Failed to generate image" });
     }
 
+    // 🖼️ Convert binary data to base64 for frontend
     const arrayBuffer = await response.arrayBuffer();
     const base64Image = Buffer.from(arrayBuffer).toString("base64");
     const imageUrl = `data:image/png;base64,${base64Image}`;
